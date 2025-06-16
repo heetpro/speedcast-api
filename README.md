@@ -72,7 +72,7 @@ bun add speedcast-api
 ### Basic Usage - Get Up and Running in 30 Seconds!
 
 ```typescript
-import { SpeedcastApi } from '@heetpro/speedcast-api';
+import { SpeedcastApi } from 'speedcast-api';
 
 // 1️⃣ Create your API instance
 const api = new SpeedcastApi({
@@ -383,7 +383,7 @@ interface SpeedcastConfig {
 
 | Library | Bundle Size (minified + gzipped) | Dependency Count | Performance Impact |
 |---------|--------------------------------|------------------|-------------------|
-| **@heetpro/speedcast-api** | **~8.2 KB** | **0 dependencies** | 🟢 **Minimal** |
+| **speedcast-api** | **~8.2 KB** | **0 dependencies** | 🟢 **Minimal** |
 | axios | ~13.2 KB | 1 dependency | 🟡 **Moderate** |
 | got | ~47.8 KB | 22 dependencies | 🔴 **High** |
 | node-fetch | ~4.1 KB | 2 dependencies | 🟢 **Low** |
@@ -399,7 +399,7 @@ interface SpeedcastConfig {
 ### 📱 Mobile-First Development
 ```typescript
 // Speedcast: Lightweight and mobile-friendly
-import { SpeedcastApi } from '@heetpro/speedcast-api';
+import { SpeedcastApi } from 'speedcast-api';
 
 // Perfect for mobile apps where every KB matters
 const mobileApi = new SpeedcastApi({
@@ -452,7 +452,7 @@ const processBulkOperations = async (operations: Operation[]) => {
 ```typescript
 // Speedcast: Perfect for serverless environments
 // Small bundle = faster cold starts
-import { SpeedcastApi } from '@heetpro/speedcast-api';
+import { SpeedcastApi } from 'speedcast-api';
 
 export const handler = async (event: any) => {
   const api = new SpeedcastApi({
