@@ -162,5 +162,9 @@ export class SpeedcastApi {
         this.rateLimiter = config.rateLimit ? new RateLimiter(config.rateLimit) : null;
         this.deduplicator = new RequestDeduplicator();
       }
+
+      async request<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+        
+      }
 }
 
