@@ -53,16 +53,16 @@ Choose your favorite package manager:
 
 ```bash
 # npm
-npm install @heetpro/speedcast-api
+npm install speedcast-api
 
 # yarn
-yarn add @heetpro/speedcast-api
+yarn add speedcast-api
 
 # pnpm
-pnpm add @heetpro/speedcast-api
+pnpm add speedcast-api
 
 # bun
-bun add @heetpro/speedcast-api
+bun add speedcast-api
 ```
 
 ---
