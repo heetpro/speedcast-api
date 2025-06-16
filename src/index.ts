@@ -13,7 +13,7 @@
  * @license MIT
  */
 
-export interface RequestConfig {
+ interface RequestConfig {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     headers?: Record<string, string>;
     body?: any;
@@ -24,19 +24,19 @@ export interface RequestConfig {
 }
 
 
-export interface ApiResponse<T = any> {
+interface ApiResponse<T = any> {
     data: T;
     status: number;
     statusText: string;
     headers: Record<string, string>;
 }
 
-export interface RateLimitConfig {
+interface RateLimitConfig {
     requests: number;
     window: number;
 }
 
-export interface SpeedcastConfig {
+interface SpeedcastConfig {
     baseURL?: string;
     defaultHeaders?: Record<string, string>;
     timeout?: number;
@@ -327,4 +327,13 @@ export class SpeedcastApi {
         this.defaultHeaders = { ...this.defaultHeaders, ...headers };
     }
 }
+
+export function createHmmApi(config?: SpeedcastConfig): SpeedcastApi {
+    return new SpeedcastApi(config);
+}
+
+export default SpeedcastApi;
+
+export type { RequestConfig, ApiResponse, RateLimitConfig, SpeedcastConfig };
+
 
