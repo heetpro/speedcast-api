@@ -36,3 +36,13 @@ export interface RateLimitConfig {
     window: number; 
 }
 
+export interface SpeedcastConfig {
+    baseURL?: string;
+    defaultHeaders?: Record<string, string>;
+    timeout?: number;
+    retries?: number;
+    cache?: boolean;
+    cacheTTL?: number;
+    rateLimit?: RateLimitConfig;
+  }
+
