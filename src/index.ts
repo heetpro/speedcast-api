@@ -21,6 +21,18 @@ export interface RequestConfig {
     retries?: number;
     cache?: boolean;
     cacheTTL?: number;
-  }
+}
 
-  
+
+export interface ApiResponse<T = any> {
+    data: T;
+    status: number;
+    statusText: string;
+    headers: Record<string, string>;
+}
+
+export interface RateLimitConfig {
+    requests: number;
+    window: number; 
+}
+
