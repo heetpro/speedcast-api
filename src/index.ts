@@ -46,7 +46,28 @@ export interface SpeedcastConfig {
     rateLimit?: RateLimitConfig;
 }
 
-class RequestCache {
-    private cache = new Map<String, { data: any; expires: number }>
+class RateLimiter {
+    private requests: number[] = [];
+    private maxRequests: number;
+    private windowMs: number;
+
     
+}
+
+class RequestCache {
+    private cache = new Map<String, { data: any; expires: number }>();
+    private defaultTTL: number;
+
+    /*
+        it defaulty seted to 5 minutes
+    */
+    constructor(defaultTTL: number = 300000) {
+        this.defaultTTL = defaultTTL
+    }
+
+    set(key: string, data: any, ttl?: number): void {
+        const expires = Date.now() + (ttl || this.defaultTTL);
+        this.cache.set(key, { data, expires });
+    }
+
 }
