@@ -1,0 +1,32 @@
+# Source files
+src/
+tests/
+docs/
+
+# Config files
+tsconfig*.json
+.eslintrc.js
+.prettierrc
+jest.config.js
+
+# Development files
+.github/
+.vscode/
+coverage/
+*.log
+*.tgz
+
+# Git
+.git/
+.gitignore
+
+# Testing
+__tests__/
+*.test.ts
+*.spec.ts
+test-results/
+
+# Misc
+.DS_Store
+Thumbs.db
+.nyc_output
