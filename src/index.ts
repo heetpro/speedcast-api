@@ -150,21 +150,39 @@ export class SpeedcastApi {
     constructor(config: SpeedcastConfig = {}) {
         this.baseURL = config.baseURL || '';
         this.defaultHeaders = {
-          'Content-Type': 'application/json',
-          ...config.defaultHeaders
+            'Content-Type': 'application/json',
+            ...config.defaultHeaders
         };
         this.defaultTimeout = config.timeout || 10000;
         this.defaultRetries = config.retries || 3;
         this.defaultCacheEnabled = config.cache || false;
         this.defaultCacheTTL = config.cacheTTL || 300000;
-        
+
         this.cache = new RequestCache(this.defaultCacheTTL);
         this.rateLimiter = config.rateLimit ? new RateLimiter(config.rateLimit) : null;
         this.deduplicator = new RequestDeduplicator();
+    }
+
+    async request<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
+        const fullUrl = this.buildUrl(url);
+        const requestConfig = this.mergeConfig(config);
+    }
+
+    private buildUrl(url: string): string {
+        return 'yoo';
+    }
+
+    private mergeConfig(config: RequestConfig): RequestConfig {
+        return {
+          method: config.method || 'GET',
+          headers: { ...this.defaultHeaders, ...config.headers },
+          body: config.body,
+          timeout: config.timeout || this.defaultTimeout,
+          retries: config.retries !== undefined ? config.retries : this.defaultRetries,
+          cache: config.cache !== undefined ? config.cache : this.defaultCacheEnabled,
+          cacheTTL: config.cacheTTL || this.defaultCacheTTL
+        };
       }
 
-      async request<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
-        
-      }
 }
 
