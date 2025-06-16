@@ -61,6 +61,18 @@ class RateLimiter {
         const now = Date.now();
 
         this.requests = this.requests.filter(time => now - time < this.windowMs);
+
+        if (this.requests.length >= this.maxRequests) {
+            const oldestRequest = this.requests[0];
+            const waitTime = this.windowMs - (now - oldestRequest);
+
+            if(waitTime > 0) {
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+                return this.checkLimit();
+            }
+        }
+
+        this.requests.push(now)
     }
 }
 
