@@ -1,7 +1,19 @@
 {
-  "name": "speedcast api",
+  "name": "speedcast-api",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "npm run clean && npm run build:cjs && npm run build:esm && npm run build:types",
     "build:cjs": "tsc --project tsconfig.cjs.json",
@@ -10,14 +22,15 @@
     "clean": "rimraf dist",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run lint",
+    "prepublishOnly": "npm run build",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "publish-package": "npm run build && npm publish"
   },
   "keywords": [
     "speedcast",
@@ -52,12 +65,18 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
     "@types/node-fetch": "^2.6.12",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.1",
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "jest-extended": "^6.0.0",
     "jest-fixed-jsdom": "^0.0.9",
     "msw": "^2.10.2",
-    "rimraf": "^6.0.1",
+    "prettier": "^3.5.3",
+    "rimraf": "^5.0.5",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   },

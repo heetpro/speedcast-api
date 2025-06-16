@@ -1,102 +1,128 @@
 # 🚀 Speedcast API Framework
 
-A high-performance, TypeScript-first HTTP client for modern web applications. Built for speed, reliability, and developer experience.
+A lightweight and fast API client for Next.js and Node.js with built-in caching, rate limiting, and retry logic.
 
 ## ✨ Features
 
-- 🔒 **Type Safety** - Full TypeScript support with intelligent auto-completion
-- ⚡ **Request Optimization** - Built-in caching, deduplication, and retry logic
-- 🛡️ **Rate Limiting** - Prevent API abuse with configurable rate limits
-- 🪶 **Lightweight** - Minimal bundle size with maximum functionality
-- 🎯 **Promise-based** - Modern async/await API
-- 🔄 **Auto Retry** - Intelligent retry logic with exponential backoff
-- 💾 **Smart Caching** - Configurable request caching with TTL
-- 🔀 **Request Deduplication** - Prevents duplicate simultaneous requests
+- ✅ Type Safety with TypeScript
+- ✅ Request Optimization (caching, deduplication, retry logic)
+- ✅ Rate Limiting
+- ✅ Simple and lightweight
+- ✅ Promise-based API
 
-## 📦 Installation
+## Installation
 
 ```bash
-npm install speedcast
+npm install speedcast-api
 # or
-yarn add speedcast
+yarn add speedcast-api
 # or
-pnpm add speedcast
+pnpm add speedcast-api
 ```
 
-## 🚀 Quick Start
+## Usage
+
+### Basic Usage
 
 ```typescript
-import { SpeedcastApi } from 'speedcast';
+import { SpeedcastApi } from 'speedcast-api';
 
-// Create an instance
+// Create a new instance
 const api = new SpeedcastApi({
   baseURL: 'https://api.example.com',
-  timeout: 10000,
-  retries: 3,
-  cache: true,
-  rateLimit: {
-    requests: 100,
-    window: 60000 // 1 minute
-  }
+  timeout: 5000,
+  retries: 2
 });
 
-// Make requests
-const response = await api.get('/users');
-console.log(response.data);
-```
-
-## 🛠️ Configuration
-
-### Basic Configuration
-
-```typescript
-import { SpeedcastApi, SpeedcastConfig } from 'speedcast';
-
-const config: SpeedcastConfig = {
-  baseURL: 'https://api.example.com',
-  defaultHeaders: {
-    'Authorization': 'Bearer your-token',
-    'X-API-Key': 'your-api-key'
-  },
-  timeout: 15000,
-  retries: 3,
-  cache: true,
-  cacheTTL: 300000, // 5 minutes
-  rateLimit: {
-    requests: 100,
-    window: 60000
+// Make a GET request
+const getUsers = async () => {
+  try {
+    const response = await api.get('/users');
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching users:', error);
   }
 };
 
-const api = new SpeedcastApi(config);
+// Make a POST request
+const createUser = async (userData) => {
+  try {
+    const response = await api.post('/users', userData);
+    console.log('User created:', response.data);
+  } catch (error) {
+    console.error('Error creating user:', error);
+  }
+};
 ```
 
-### Alternative Factory Function
+### With Caching
 
 ```typescript
-import { createHmmApi } from 'speedcast';
-
-const api = createHmmApi({
-  baseURL: 'https://api.example.com'
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  cache: true,
+  cacheTTL: 60000 // 1 minute
 });
+
+// This request will be cached
+const response1 = await api.get('/users', { cache: true });
+
+// This will use the cached response if within TTL
+const response2 = await api.get('/users', { cache: true });
 ```
 
-## 📖 API Reference
+### With Rate Limiting
 
-### HTTP Methods
-
-#### GET Request
 ```typescript
-const response = await api.get<User[]>('/users');
-const users = response.data;
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  rateLimit: {
+    requests: 5,
+    window: 1000 // 5 requests per second
+  }
+});
+
+// Requests will be automatically rate limited
 ```
 
-#### POST Request
+## API Reference
+
+### Configuration Options
+
 ```typescript
-const newUser = { name: 'John', email: 'john@example.com' };
-const response = await api.post<User>('/users', newUser);
+interface SpeedcastConfig {
+  baseURL?: string;
+  defaultHeaders?: Record<string, string>;
+  timeout?: number;
+  retries?: number;
+  cache?: boolean;
+  cacheTTL?: number;
+  rateLimit?: {
+    requests: number;
+    window: number;
+  };
+}
 ```
 
-#### PUT Request
+### Methods
+
+- `get<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>`
+- `post<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
+- `put<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
+- `patch<T>(url: string, data?: any, config?: RequestConfig): Promise<ApiResponse<T>>`
+- `delete<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>>`
+
+### Response Format
+
 ```typescript
-const updatedUser = { name: 'John Doe', em
+interface ApiResponse<T = any> {
+  data: T;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+}
+```
+
+## License
+
+ISC
