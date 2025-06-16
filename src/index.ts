@@ -92,4 +92,21 @@ class RequestCache {
         this.cache.set(key, { data, expires });
     }
 
+    get(key: string): any | null {
+        const cached = this.cache.get(key);
+
+        if(!cached) return null;
+
+        if(Date.now() > cached.expires) {
+            this.cache.delete(key);
+            return null;
+        }
+        return cached.data;
+    }
+
+    clear(): void{
+        this.cache.clear;
+    }
+
+    
 }
