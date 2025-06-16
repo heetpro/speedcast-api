@@ -19,5 +19,13 @@ export interface ApiConfig {
     cache?: CacheConfig;
     rateLimit?: RateLimitConfig;
     monitoring?: MonitoringConfig;
-  }
-  
+}
+
+export interface AuthConfig {
+    type: 'bearer' | 'basic' | 'apikey';
+    token?: string;
+    username?: string;
+    password?: string;
+    apiKey?: string;
+    apiKeyHeader?: string;
+}  
