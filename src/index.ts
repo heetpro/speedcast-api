@@ -136,6 +136,7 @@ class RequestDeduplicator {
     }
 }
 
+<<<<<<< HEAD
 export class SpeedcastApi {
     private baseURL: string;
     private defaultHeaders: Record<string, string>;
@@ -148,3 +149,5 @@ export class SpeedcastApi {
     private defaultCacheTTL: number;
 }
 
+=======
+>>>>>>> 3fa68c9cade232065ee75b39eac74ee65e601162
