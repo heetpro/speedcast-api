@@ -1,4 +1,3 @@
-
 /**
  * Speedcast Api Framework
  * 
@@ -105,7 +104,7 @@ class RequestCache {
     }
 
     clear(): void {
-        this.cache.clear;
+        this.cache.clear();
     }
 
     private generateKey(url: string, config: RequestConfig): string {

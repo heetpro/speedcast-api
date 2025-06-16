@@ -3,17 +3,33 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "build": "npm run clean && npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
+    "build:esm": "tsc --project tsconfig.esm.json",
+    "build:types": "tsc --project tsconfig.types.json",
+    "clean": "rimraf dist",
     "test": "jest",
-    "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:integration": "jest --testPathPattern=integration",
-    "test:unit": "jest --testPathPattern=unit"
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "speedcast",
+    "api",
+    "nextjs",
+    "nodejs",
+    "javascript",
+    "typescript"
+  ],
+  "author": "Heet Vavadiya",
   "license": "ISC",
-  "description": "",
+  "description": "Speedcast API is a lightweight and fast API client for Next.js and Node.js. It provides a simple and intuitive interface for making HTTP requests and handling responses.",
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^30.0.0",
@@ -22,6 +38,7 @@
     "jest": "^30.0.0",
     "jest-environment-jsdom": "^30.0.0",
     "jest-extended": "^6.0.0",
+    "jest-fixed-jsdom": "^0.0.9",
     "msw": "^2.10.2",
     "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"

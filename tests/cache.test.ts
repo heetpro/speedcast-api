@@ -1,4 +1,6 @@
 import { SpeedcastApi } from '../src/index';
+import { http, HttpResponse } from 'msw';
+import { server } from './mocks/server';
 
 describe('Request Cache', () => {
   let api: SpeedcastApi;
@@ -19,10 +21,12 @@ describe('Request Cache', () => {
     let requestCount = 0;
     
     // Mock handler that tracks request count
-    const handler = jest.fn((req, res, ctx) => {
-      requestCount++;
-      return res(ctx.status(200), ctx.json({ count: requestCount }));
-    });
+    server.use(
+      http.get('https://api.test.com/test', () => {
+        requestCount++;
+        return HttpResponse.json({ count: requestCount }, { status: 200 });
+      })
+    );
 
     // First request
     const response1 = await api.get('/test', { cache: true });
@@ -37,6 +41,7 @@ describe('Request Cache', () => {
 
     // Third request after TTL - should make new request
     const response3 = await api.get('/test', { cache: true });
+    expect(response3.data.count).toBe(2);
     expect(requestCount).toBe(2);
   });
 });

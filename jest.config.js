@@ -1,6 +1,6 @@
 module.exports = {
     preset: 'ts-jest',
-    testEnvironment: 'jsdom',
+    testEnvironment: 'jest-fixed-jsdom',
     roots: ['<rootDir>/src', '<rootDir>/tests'],
     testMatch: [
       '**/__tests__/**/*.+(ts|tsx|js)',
@@ -17,5 +17,8 @@ module.exports = {
     coverageDirectory: 'coverage',
     coverageReporters: ['text', 'lcov', 'html'],
     setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-    testTimeout: 10000
+    testTimeout: 10000,
+    testEnvironmentOptions: {
+      customExportConditions: ['node', 'node-addons'],
+    }
   };
