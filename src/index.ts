@@ -136,3 +136,15 @@ class RequestDeduplicator {
     }
 }
 
+export class SpeedcastApi {
+    private baseURL: string;
+    private defaultHeaders: Record<string, string>;
+    private defaultTimeout: number;
+    private defaultRetries: number;
+    private cache: RequestCache;
+    private rateLimiter: RateLimiter | null;
+    private deduplicator: RequestDeduplicator;
+    private defaultCacheEnabled: boolean;
+    private defaultCacheTTL: number;
+}
+
