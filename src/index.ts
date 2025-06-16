@@ -168,14 +168,14 @@ export class SpeedcastApi {
         const requestConfig = this.mergeConfig(config);
 
 
-        if(this.rateLimiter) {
+        if (this.rateLimiter) {
             await this.rateLimiter.checkLimit();
         }
 
         if ((requestConfig.method === 'GET' || !requestConfig.method) && requestConfig.cache) {
             const cacheKey = this.cache.getCacheKey(fullUrl, requestConfig);
             const cached = this.cache.get(cacheKey);
-            if(cached) {
+            if (cached) {
                 return cached;
             }
         }
@@ -188,11 +188,22 @@ export class SpeedcastApi {
     }
 
     private async executeRequest<T>(url: string, config: RequestConfig): Promise<ApiResponse<T>> {
-        
+        let lastError: Error;
+
+        for (let attempt = 0; attempt <= (config.retries || 0); attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+
+            }
+            catch (error) {
+                
+            }
+        }
     }
 
     private buildUrl(url: string): string {
-        if(url.startsWith('https://') || url.startsWith('http://')) {
+        if (url.startsWith('https://') || url.startsWith('http://')) {
             return url;
         }
 
@@ -204,15 +215,15 @@ export class SpeedcastApi {
 
     private mergeConfig(config: RequestConfig): RequestConfig {
         return {
-          method: config.method || 'GET',
-          headers: { ...this.defaultHeaders, ...config.headers },
-          body: config.body,
-          timeout: config.timeout || this.defaultTimeout,
-          retries: config.retries !== undefined ? config.retries : this.defaultRetries,
-          cache: config.cache !== undefined ? config.cache : this.defaultCacheEnabled,
-          cacheTTL: config.cacheTTL || this.defaultCacheTTL
+            method: config.method || 'GET',
+            headers: { ...this.defaultHeaders, ...config.headers },
+            body: config.body,
+            timeout: config.timeout || this.defaultTimeout,
+            retries: config.retries !== undefined ? config.retries : this.defaultRetries,
+            cache: config.cache !== undefined ? config.cache : this.defaultCacheEnabled,
+            cacheTTL: config.cacheTTL || this.defaultCacheTTL
         };
-      }
+    }
 
 }
 
