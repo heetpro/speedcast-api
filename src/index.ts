@@ -166,6 +166,29 @@ export class SpeedcastApi {
     async request<T = any>(url: string, config: RequestConfig = {}): Promise<ApiResponse<T>> {
         const fullUrl = this.buildUrl(url);
         const requestConfig = this.mergeConfig(config);
+
+
+        if(this.rateLimiter) {
+            await this.rateLimiter.checkLimit();
+        }
+
+        if ((requestConfig.method === 'GET' || !requestConfig.method) && requestConfig.cache) {
+            const cacheKey = this.cache.getCacheKey(fullUrl, requestConfig);
+            const cached = this.cache.get(cacheKey);
+            if(cached) {
+                return cached;
+            }
+        }
+
+        const dedupeKey = `${requestConfig.method || 'GET'}:${fullUrl}:${JSON.stringify(requestConfig.body)}`;
+
+        return this.deduplicator.deduplicate(dedupeKey, async () => {
+            return this.executeRequest<T>(fullUrl, requestConfig);
+        })
+    }
+
+    private async executeRequest<T>(url: string, config: RequestConfig): Promise<ApiResponse<T>> {
+        
     }
 
     private buildUrl(url: string): string {
