@@ -1,0 +1,25 @@
+{
+  "name": "speedcast",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.3",
+    "@types/node-fetch": "^2.6.12",
+    "jest": "^30.0.0",
+    "nodemon": "^3.1.10",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "events": "^3.3.0",
+    "node-fetch": "^2.7.0"
+  }
+}
