@@ -36,9 +36,17 @@
     "rest",
     "ajax"
   ],
-  "author": "Heet Vavadiya",
+  "author": {
+    "name": "Heet Vavadiya",
+    "email": "heetvavadiya456@gmail.com",
+    "url": "https://github.com/heetpro"
+  },
   "license": "ISC",
   "description": "Speedcast API is a lightweight and fast API client for Next.js and Node.js. It provides a simple and intuitive interface for making HTTP requests and handling responses.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heetpro/speedcast-api"
+  },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^30.0.0",
