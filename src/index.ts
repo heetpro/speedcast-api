@@ -169,7 +169,14 @@ export class SpeedcastApi {
     }
 
     private buildUrl(url: string): string {
-        return 'yoo';
+        if(url.startsWith('https://') || url.startsWith('http://')) {
+            return url;
+        }
+
+        const base = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
+        const path = url.startsWith('/') ? url : `/${url}`;
+
+        return `${base}${path}`
     }
 
     private mergeConfig(config: RequestConfig): RequestConfig {
