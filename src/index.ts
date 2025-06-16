@@ -66,7 +66,7 @@ class RateLimiter {
             const oldestRequest = this.requests[0];
             const waitTime = this.windowMs - (now - oldestRequest);
 
-            if(waitTime > 0) {
+            if (waitTime > 0) {
                 await new Promise(resolve => setTimeout(resolve, waitTime));
                 return this.checkLimit();
             }
@@ -95,18 +95,25 @@ class RequestCache {
     get(key: string): any | null {
         const cached = this.cache.get(key);
 
-        if(!cached) return null;
+        if (!cached) return null;
 
-        if(Date.now() > cached.expires) {
+        if (Date.now() > cached.expires) {
             this.cache.delete(key);
             return null;
         }
         return cached.data;
     }
 
-    clear(): void{
+    clear(): void {
         this.cache.clear;
     }
 
-    
+    private generateKey(url: string, config: RequestConfig): string {
+        return `${config.method || 'GET'}:${url}:${JSON.stringify(config.body || {})}`;
+    }
+
+    getCacheKey(url: string, config: RequestConfig): string {
+        return this.generateKey(url, config);
+    }
+
 }
