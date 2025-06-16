@@ -247,6 +247,28 @@ export class SpeedcastApi {
         throw lastError!;
     }
 
+    // methods
+    async get<T = any>(url: string, config: Omit<RequestConfig, 'method'> = {}): Promise<ApiResponse<T>> {
+        return this.request<T>(url, { ...config, method: 'GET' });
+      }
+    
+      async post<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+        return this.request<T>(url, { ...config, method: 'POST', body: data });
+      }
+    
+      async put<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+        return this.request<T>(url, { ...config, method: 'PUT', body: data });
+      }
+    
+      async delete<T = any>(url: string, config: Omit<RequestConfig, 'method'> = {}): Promise<ApiResponse<T>> {
+        return this.request<T>(url, { ...config, method: 'DELETE' });
+      }
+    
+      async patch<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+        return this.request<T>(url, { ...config, method: 'PATCH', body: data });
+      }
+    
+
     private buildUrl(url: string): string {
         if (url.startsWith('https://') || url.startsWith('http://')) {
             return url;
