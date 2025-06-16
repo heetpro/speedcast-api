@@ -136,7 +136,6 @@ class RequestDeduplicator {
     }
 }
 
-<<<<<<< HEAD
 export class SpeedcastApi {
     private baseURL: string;
     private defaultHeaders: Record<string, string>;
@@ -147,7 +146,21 @@ export class SpeedcastApi {
     private deduplicator: RequestDeduplicator;
     private defaultCacheEnabled: boolean;
     private defaultCacheTTL: number;
+
+    constructor(config: SpeedcastConfig = {}) {
+        this.baseURL = config.baseURL || '';
+        this.defaultHeaders = {
+          'Content-Type': 'application/json',
+          ...config.defaultHeaders
+        };
+        this.defaultTimeout = config.timeout || 10000;
+        this.defaultRetries = config.retries || 3;
+        this.defaultCacheEnabled = config.cache || false;
+        this.defaultCacheTTL = config.cacheTTL || 300000;
+        
+        this.cache = new RequestCache(this.defaultCacheTTL);
+        this.rateLimiter = config.rateLimit ? new RateLimiter(config.rateLimit) : null;
+        this.deduplicator = new RequestDeduplicator();
+      }
 }
 
-=======
->>>>>>> 3fa68c9cade232065ee75b39eac74ee65e601162
