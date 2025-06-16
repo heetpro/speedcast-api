@@ -117,3 +117,12 @@ class RequestCache {
     }
 
 }
+
+
+class RequestDeduplicator {
+    private pendingRequests = new Map<string, Promise<any>>();
+
+    async deduplicate<T>(key: string, requestFn: ()=> Promise<T>): Promise<T> {
+        
+    }
+}
