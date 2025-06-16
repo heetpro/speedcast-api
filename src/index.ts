@@ -242,7 +242,7 @@ export class SpeedcastApi {
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
                 }
             }
-            
+
         }
         throw lastError!;
     }
@@ -250,24 +250,24 @@ export class SpeedcastApi {
     // methods
     async get<T = any>(url: string, config: Omit<RequestConfig, 'method'> = {}): Promise<ApiResponse<T>> {
         return this.request<T>(url, { ...config, method: 'GET' });
-      }
-    
-      async post<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+    }
+
+    async post<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
         return this.request<T>(url, { ...config, method: 'POST', body: data });
-      }
-    
-      async put<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+    }
+
+    async put<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
         return this.request<T>(url, { ...config, method: 'PUT', body: data });
-      }
-    
-      async delete<T = any>(url: string, config: Omit<RequestConfig, 'method'> = {}): Promise<ApiResponse<T>> {
+    }
+
+    async delete<T = any>(url: string, config: Omit<RequestConfig, 'method'> = {}): Promise<ApiResponse<T>> {
         return this.request<T>(url, { ...config, method: 'DELETE' });
-      }
-    
-      async patch<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
+    }
+
+    async patch<T = any>(url: string, data?: any, config: Omit<RequestConfig, 'method' | 'body'> = {}): Promise<ApiResponse<T>> {
         return this.request<T>(url, { ...config, method: 'PATCH', body: data });
-      }
-    
+    }
+
 
     private buildUrl(url: string): string {
         if (url.startsWith('https://') || url.startsWith('http://')) {
@@ -290,6 +290,29 @@ export class SpeedcastApi {
             cache: config.cache !== undefined ? config.cache : this.defaultCacheEnabled,
             cacheTTL: config.cacheTTL || this.defaultCacheTTL
         };
+    }
+
+    private async parseResponse<T>(response: Response): Promise<T> {
+        const contentType = response.headers.get('content-type');
+
+        if (contentType?.includes('application/json')) {
+            return response.json();
+        }
+
+        if (contentType?.includes('text/')) {
+            return response.text() as unknown as T;
+        }
+
+        return response.blob() as unknown as T;
+    }
+
+
+    private extractHeaders(response: Response): Record<string, string> {
+        const headers: Record<string, string> = {};
+        response.headers.forEach((value, key) => {
+            headers[key] = value;
+        })
+        return headers;
     }
 
 }
