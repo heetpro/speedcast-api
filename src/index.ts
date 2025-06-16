@@ -195,11 +195,56 @@ export class SpeedcastApi {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
+
+                const response = await fetch(url, {
+                    method: config.method || 'GET',
+                    headers: config.headers,
+                    body: config.body ? JSON.stringify(config.body) : undefined,
+                    signal: controller.signal
+                });
+
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await this.parseResponse<T>(response);
+
+                const result: ApiResponse<T> = {
+                    data,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: this.extractHeaders(response)
+                };
+
+                if ((config.method === 'GET' || !config.method) && config.cache) {
+                    const cacheKey = this.cache.getCacheKey(url, config);
+                    this.cache.set(cacheKey, result, config.cacheTTL);
+                }
+
+                return result;
             }
             catch (error) {
-                
+                lastError = error as Error;
+
+                if (error instanceof Error && (
+                    error.name === 'AbortError' ||
+                    error.message.includes('400') ||
+                    error.message.includes('401') ||
+                    error.message.includes('403') ||
+                    error.message.includes('404')
+                )) {
+                    break;
+                }
+                if (attempt < (config.retries || 0)) {
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                }
             }
+            
         }
+        throw lastError!;
     }
 
     private buildUrl(url: string): string {
