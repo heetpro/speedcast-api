@@ -51,7 +51,17 @@ class RateLimiter {
     private maxRequests: number;
     private windowMs: number;
 
-    
+    constructor(config: RateLimitConfig) {
+        this.maxRequests = config.requests;
+        this.windowMs = config.window;
+    }
+
+    async checkLimit(): Promise<void> {
+
+        const now = Date.now();
+
+        this.requests = this.requests.filter(time => now - time < this.windowMs);
+    }
 }
 
 class RequestCache {
