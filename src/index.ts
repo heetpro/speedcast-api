@@ -315,5 +315,16 @@ export class SpeedcastApi {
         return headers;
     }
 
+    clearCache(): void {
+        this.cache.clear();
+    }
+
+    setBaseURL(baseURL: string): void {
+        this.baseURL = baseURL;
+    }
+
+    setDefaultHeaders(headers: Record<string, string>): void {
+        this.defaultHeaders = { ...this.defaultHeaders, ...headers };
+    }
 }
 
