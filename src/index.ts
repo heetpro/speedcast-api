@@ -33,7 +33,7 @@ export interface ApiResponse<T = any> {
 
 export interface RateLimitConfig {
     requests: number;
-    window: number; 
+    window: number;
 }
 
 export interface SpeedcastConfig {
@@ -44,5 +44,9 @@ export interface SpeedcastConfig {
     cache?: boolean;
     cacheTTL?: number;
     rateLimit?: RateLimitConfig;
-  }
+}
 
+class RequestCache {
+    private cache = new Map<String, { data: any; expires: number }>
+    
+}
