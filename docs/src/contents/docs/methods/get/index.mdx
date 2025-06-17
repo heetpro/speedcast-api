@@ -1,0 +1,155 @@
+---
+title: GET Method
+description: How to make GET requests with speedcast-api
+---
+
+# Using GET Method in speedcast-api
+
+## Basic Usage
+
+### 1. Import and Create API Client
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an API client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+```
+
+### 2. Simple GET Request
+
+```typescript
+// Fetch users
+const response = await api.get('/users');
+
+// Access the data directly
+const users = response.data;
+console.log(users);
+```
+
+## Advanced Usage
+
+### With Type Safety
+
+```typescript
+// Define an interface for your data
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// Typed GET request
+const response = await api.get<User>('/users/1');
+
+// TypeScript knows the exact shape of the data
+const user = response.data;
+console.log(user.name); // Fully typed!
+```
+
+### With Caching
+
+```typescript
+// Cache this specific request
+const response = await api.get('/users', {
+  cache: true,
+  cacheTTL: 60000 // Cache for 1 minute
+});
+
+// Subsequent identical requests will use cached data
+const cachedResponse = await api.get('/users', { cache: true });
+// This will use the cached result without making a network request
+```
+
+### Custom Options
+
+#### Add Headers
+
+```typescript
+const response = await api.get('/users', {
+  headers: {
+    'X-Custom-Header': 'Some Value',
+  },
+});
+```
+
+#### Set Timeout
+
+```typescript
+// Set a custom timeout for this request
+const response = await api.get('/users', {
+  timeout: 5000, // 5 seconds
+});
+```
+
+#### Custom Retries
+
+```typescript
+// Set custom retry count for this request
+const response = await api.get('/sensitive-data', {
+  retries: 5 // More retries for important data
+});
+```
+
+## Full Example
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create a fully configured client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  defaultHeaders: {
+    'Accept': 'application/json',
+    'User-Agent': 'MyAwesomeApp/1.0'
+  },
+  timeout: 10000,
+  cache: true,
+  cacheTTL: 300000, // 5 minutes
+  retries: 3,
+  rateLimit: {
+    requests: 5,
+    window: 1000 // 5 requests per second
+  }
+});
+
+async function fetchUserProfile(userId: string) {
+  try {
+    // Get user profile with custom options for this request
+    const response = await api.get<UserProfile>(`/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${yourAuthToken}`,
+      },
+      cache: true,
+      timeout: 20000 // Override timeout for this specific request
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch user profile:', error);
+    throw error;
+  }
+}
+```
+
+## Response Structure
+
+The response from a GET request has the following structure:
+
+```typescript
+interface ApiResponse<T = any> {
+  data: T;                           // Response data
+  status: number;                    // HTTP status code
+  statusText: string;                // HTTP status text
+  headers: Record<string, string>;   // Response headers
+}
+```
+
+## Quick Tips
+
+- Use TypeScript generics for type-safe responses
+- Enable caching for data that doesn't change often
+- Adjust retry counts based on the importance of the request
+- Configure rate limiting to avoid hitting API rate limits

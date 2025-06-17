@@ -1,0 +1,135 @@
+---
+title: Rate Limiting
+description: How to use the built-in rate limiting feature in speedcast-api
+---
+
+# Rate Limiting in Speedcast API
+
+## Overview
+
+Rate limiting is an essential feature when working with APIs that have usage restrictions. Speedcast API includes built-in rate limiting functionality that automatically manages your request throughput to prevent hitting API limits.
+
+## How Rate Limiting Works
+
+When you configure rate limiting, Speedcast API:
+
+1. Keeps track of the requests you've made in the specified time window
+2. Automatically queues and delays requests when you approach your limit
+3. Distributes requests evenly within the time window
+4. Prevents API rate limit errors before they occur
+
+## Configuration
+
+### Global Rate Limiting
+
+You can configure rate limiting when creating your API instance:
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  rateLimit: {
+    requests: 100,  // Maximum 100 requests
+    window: 60000   // Per minute (60,000 milliseconds)
+  }
+});
+```
+
+## Real-World Examples
+
+### Third-Party API Integration
+
+```typescript
+// GitHub API has a rate limit of 60 requests per hour for unauthenticated requests
+const githubApi = new SpeedcastApi({
+  baseURL: 'https://api.github.com',
+  rateLimit: {
+    requests: 60,
+    window: 3600000  // 1 hour in milliseconds
+  }
+});
+
+// Now you can make requests without worrying about rate limits
+// Requests will be automatically throttled if needed
+async function fetchAllRepositories(username: string) {
+  try {
+    const response = await githubApi.get(`/users/${username}/repos`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching repositories:', error);
+    throw error;
+  }
+}
+```
+
+### Aggressive Rate Limiting
+
+For APIs with stricter limits:
+
+```typescript
+// For an API that only allows 5 requests per second
+const strictApi = new SpeedcastApi({
+  baseURL: 'https://api.strict-service.com',
+  rateLimit: {
+    requests: 5,
+    window: 1000  // 1 second
+  }
+});
+
+// Even if you make multiple requests in rapid succession,
+// they will be automatically spaced out to comply with the rate limit
+async function processBatchOfItems(items: any[]) {
+  const results = [];
+  
+  for (const item of items) {
+    // These requests will be automatically throttled
+    const response = await strictApi.post('/process', item);
+    results.push(response.data);
+  }
+  
+  return results;
+}
+```
+
+## Benefits of Automatic Rate Limiting
+
+1. **Prevent API Bans and Timeouts** - Avoid getting your IP or API key temporarily banned
+2. **Optimize Request Distribution** - Spread requests evenly over time
+3. **Remove Manual Timing Logic** - No need to manually implement delays between requests
+4. **Maximize API Usage** - Use your full quota without exceeding limits
+5. **Simplified Code** - No complex rate limiting logic in your application code
+
+## Best Practices
+
+- Set rate limits slightly below the actual API limits to account for other factors
+- For critical applications, consider implementing additional fallback mechanisms
+- Monitor API usage to adjust rate limits as needed
+- Check API documentation for any changes to rate limits
+
+## Advanced Usage
+
+For advanced scenarios where you need dynamic rate limiting:
+
+```typescript
+// Create a rate-limited API instance
+const dynamicApi = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+
+// Update rate limiting based on API response headers
+function updateRateLimits(response: any) {
+  const remainingRequests = parseInt(response.headers['x-rate-limit-remaining'] || '60');
+  const resetTime = parseInt(response.headers['x-rate-limit-reset'] || '3600') * 1000;
+  
+  // Dynamically adjust rate limiting based on API response
+  if (remainingRequests && resetTime) {
+    dynamicApi.setRateLimit({
+      requests: remainingRequests,
+      window: resetTime
+    });
+  }
+}
+```
+
+By leveraging Speedcast API's built-in rate limiting feature, you can confidently work with APIs without worrying about hitting rate limits or implementing complex throttling mechanisms yourself. 

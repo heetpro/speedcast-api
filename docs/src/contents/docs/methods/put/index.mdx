@@ -1,0 +1,245 @@
+---
+title: PUT Method
+description: How to make PUT requests with speedcast-api
+---
+
+# 🔄 Using PUT Method
+
+<div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200 mb-6">
+  <p className="text-blue-800 font-medium">PUT requests replace an entire resource with a new representation. Always include all fields required for the resource, as missing fields may be removed.</p>
+</div>
+
+## Basic Usage
+
+### 1. Import and Create API Client
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an API client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+```
+
+### 2. Simple PUT Request
+
+```typescript
+// Replace entire user resource
+const completeUserData = {
+  name: "John Doe",
+  email: "john@example.com",
+  age: 30,
+  active: true,
+};
+
+const response = await api.put('/users/123', completeUserData);
+
+// Process the successful response
+console.log(`Status: ${response.status}`); // e.g., 200 OK
+console.log('User completely updated:', response.data);
+```
+
+## Advanced Usage
+
+### With Type Safety
+
+```typescript
+// Define interfaces for full resource replacement
+interface UserResource {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+  active: boolean;
+}
+
+const fullUserUpdate: UserResource = {
+  id: 123,
+  name: "John Doe",
+  email: "john.doe@example.com",
+  age: 31,
+  active: true,
+};
+
+const response = await api.put<UserResource>('/users/123', fullUserUpdate);
+
+// TypeScript knows the exact shape of the response
+const updatedUser = response.data;
+console.log(updatedUser.name);
+```
+
+### Custom Options
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Add Headers</h4>
+    
+```typescript
+const response = await api.put('/users/123', fullUserUpdate, {
+  headers: {
+    'X-Update-Reason': 'Profile Revision',
+    'Authorization': `Bearer ${yourAuthToken}`,
+  },
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Set Timeout</h4>
+    
+```typescript
+const response = await api.put('/users/123', fullUserUpdate, {
+  timeout: 15000, // 15 seconds
+});
+```
+  </div>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Configure Retries</h4>
+    
+```typescript
+const response = await api.put('/users/123', fullUserUpdate, {
+  retries: 3, // Retry up to 3 times
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Error Handling</h4>
+    
+```typescript
+try {
+  const response = await api.put('/users/123', fullUserUpdate);
+  console.log('Update successful');
+} catch (error) {
+  console.error('Update failed:', error);
+}
+```
+  </div>
+</div>
+
+## Full Example Scenario
+
+<div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-6 rounded-lg border border-emerald-200 my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  defaultHeaders: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  },
+  timeout: 10000,
+  retries: 2
+});
+
+async function updateEntireUserProfile() {
+  try {
+    // Complete profile replacement
+    const completeProfile = {
+      username: "johndoe",
+      email: "john.doe@example.com",
+      profile: {
+        firstName: "John",
+        lastName: "Doe",
+        bio: "Software developer",
+        skills: ["TypeScript", "React", "Node.js"],
+      },
+      settings: {
+        theme: "dark",
+        notifications: true,
+      },
+    };
+
+    const response = await api.put<UserProfile>('/profile', completeProfile, {
+      headers: {
+        'Authorization': `Bearer ${yourAuthToken}`,
+      }
+    });
+
+    // Replace entire local profile
+    replaceEntireProfile(response.data);
+    console.log('Profile completely updated:', response.data);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    throw error;
+  } finally {
+    // Clean up operations
+    clearFormState();
+  }
+}
+```
+</div>
+
+## Key Differences from PATCH
+
+<div className="overflow-x-auto my-6">
+  <table className="w-full text-sm border-collapse">
+    <thead>
+      <tr className="bg-gray-100">
+        <th className="border border-gray-300 px-4 py-2">Method</th>
+        <th className="border border-gray-300 px-4 py-2">Purpose</th>
+        <th className="border border-gray-300 px-4 py-2">Example</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2 font-medium">PUT</td>
+        <td className="border border-gray-300 px-4 py-2">Replaces the entire resource</td>
+        <td className="border border-gray-300 px-4 py-2">
+          <pre className="text-xs bg-gray-50 p-2 rounded">
+{`api.put("/users/123", {
+  name: "New Name",
+  email: "new@email.com",
+  age: 30,
+  // All fields must be included
+});`}
+          </pre>
+        </td>
+      </tr>
+      <tr>
+        <td className="border border-gray-300 px-4 py-2 font-medium">PATCH</td>
+        <td className="border border-gray-300 px-4 py-2">Updates only specific fields</td>
+        <td className="border border-gray-300 px-4 py-2">
+          <pre className="text-xs bg-gray-50 p-2 rounded">
+{`api.patch("/users/123", {
+  // Only update what's needed
+  name: "New Name",
+});`}
+          </pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Response Structure
+
+The response from a PUT request has the following structure:
+
+```typescript
+interface ApiResponse<T = any> {
+  data: T;                           // Response data
+  status: number;                    // HTTP status code
+  statusText: string;                // HTTP status text
+  headers: Record<string, string>;   // Response headers
+}
+```
+
+<div className="bg-gray-50 p-4 rounded-lg border border-gray-200 my-6">
+  <h3 className="text-lg font-semibold mb-2">💡 Quick Tips</h3>
+  <ul className="list-disc pl-6 space-y-1">
+    <li>PUT completely replaces the existing resource</li>
+    <li>Always include ALL required fields to prevent data loss</li>
+    <li>Use TypeScript interfaces to ensure all required fields are included</li>
+    <li>Common success status codes: 200 (OK) or 204 (No Content)</li>
+    <li>Use PATCH instead when you only need to update specific fields</li>
+  </ul>
+</div>

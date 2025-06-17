@@ -1,0 +1,266 @@
+---
+title: PATCH Method
+description: How to make PATCH requests with speedcast-api
+---
+
+# 🔧 Using PATCH Method
+
+<div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200 mb-6">
+  <p className="text-purple-800 font-medium">PATCH requests update only specific fields of a resource, preserving other existing data. Perfect for partial updates when you don't need to replace the entire resource.</p>
+</div>
+
+## Basic Usage
+
+### 1. Import and Create API Client
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an API client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+```
+
+### 2. Simple PATCH Request
+
+```typescript
+// Partially update a user's profile
+const updateData = {
+  email: "newemail@example.com",
+};
+
+const response = await api.patch('/users/123', updateData);
+
+// Process the successful response
+console.log(`Status: ${response.status}`); // e.g., 200 OK
+console.log('Updated user:', response.data);
+```
+
+## Advanced Usage
+
+### With Type Safety
+
+```typescript
+// Define interfaces for update request and response
+interface UserUpdateRequest {
+  email?: string;
+  name?: string;
+}
+
+interface UserUpdateResponse {
+  id: number;
+  email: string;
+  updatedAt: string;
+}
+
+const updateData: UserUpdateRequest = {
+  email: "john.doe@example.com",
+  name: "John Doe",
+};
+
+const response = await api.patch<UserUpdateResponse>('/users/123', updateData);
+
+// TypeScript knows the exact shape of the response
+const updatedUser = response.data;
+console.log(updatedUser.updatedAt);
+```
+
+### Custom Options
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Add Headers</h4>
+    
+```typescript
+const response = await api.patch('/users/123', updateData, {
+  headers: {
+    'X-Update-Source': 'ProfileSettings',
+    'Authorization': `Bearer ${yourAuthToken}`,
+  },
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Set Timeout</h4>
+    
+```typescript
+const response = await api.patch('/users/123', updateData, {
+  timeout: 12000, // 12 seconds
+});
+```
+  </div>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Configure Retries</h4>
+    
+```typescript
+const response = await api.patch('/users/123', updateData, {
+  retries: 2, // Retry twice if needed
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Error Handling</h4>
+    
+```typescript
+try {
+  const response = await api.patch('/users/123', updateData);
+  console.log('Update successful');
+} catch (error) {
+  console.error('Update failed:', error);
+}
+```
+  </div>
+</div>
+
+## Full Example Scenario
+
+<div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-6 rounded-lg border border-amber-200 my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  defaultHeaders: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  },
+  timeout: 8000,
+  retries: 2
+});
+
+async function updateUserProfile() {
+  try {
+    // Partial update of user profile
+    const profileUpdates = {
+      preferences: {
+        theme: "dark",
+        notifications: true,
+      },
+      contactInfo: {
+        phone: "+1234567890",
+      },
+    };
+
+    const response = await api.patch<UserProfile>('/profile', profileUpdates, {
+      headers: {
+        'Authorization': `Bearer ${yourAuthToken}`,
+      }
+    });
+
+    // Update local state with new profile data
+    updateLocalProfile(response.data);
+    console.log('Profile updated successfully');
+    
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    throw error;
+  } finally {
+    // Clean up operations
+    clearFormChanges();
+  }
+}
+```
+</div>
+
+## Practical Use Cases
+
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
+  <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-2">Partial Updates</h3>
+    
+```typescript
+// Update only specific fields
+const partialUpdate = {
+  // Only update these specific fields
+  status: "active",
+  lastLogin: new Date().toISOString(),
+};
+
+const response = await api.patch('/users/current', partialUpdate);
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border-l-4 border-green-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-2">Complex Nested Updates</h3>
+    
+```typescript
+// Update nested object properties
+const nestedUpdate = {
+  settings: {
+    preferences: {
+      language: "en",
+      timezone: "UTC",
+    },
+  },
+};
+
+const response = await api.patch('/account', nestedUpdate);
+```
+  </div>
+</div>
+
+## PATCH vs PUT Comparison
+
+<div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm my-6">
+  <div className="flex items-center mb-3">
+    <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+      <span className="text-purple-700 font-bold">P</span>
+    </div>
+    <h3 className="font-semibold">PATCH: Update specific fields</h3>
+  </div>
+  
+```typescript
+// Only specified fields are updated
+api.patch('/users/123', { email: "new@example.com" });
+// Other user data remains unchanged
+```
+
+  <div className="flex items-center mt-4 mb-3">
+    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+      <span className="text-blue-700 font-bold">P</span>
+    </div>
+    <h3 className="font-semibold">PUT: Replace entire resource</h3>
+  </div>
+  
+```typescript
+// All fields must be included, as the whole resource is replaced
+api.put('/users/123', { 
+  name: "John", 
+  email: "john@example.com", 
+  age: 30, 
+  role: "user" 
+});
+```
+</div>
+
+## Response Structure
+
+The response from a PATCH request has the following structure:
+
+```typescript
+interface ApiResponse<T = any> {
+  data: T;                           // Response data
+  status: number;                    // HTTP status code
+  statusText: string;                // HTTP status text
+  headers: Record<string, string>;   // Response headers
+}
+```
+
+<div className="bg-gray-50 p-4 rounded-lg border border-gray-200 my-6">
+  <h3 className="text-lg font-semibold mb-2">💡 Quick Tips</h3>
+  <ul className="list-disc pl-6 space-y-1">
+    <li>Use PATCH for partial updates (unlike PUT which replaces entire resource)</li>
+    <li>Only include the fields you want to modify</li>
+    <li>Define explicit TypeScript interfaces for both request and response</li>
+    <li>Check the API documentation to understand how nested updates are handled</li>
+    <li>Some APIs might implement PATCH differently - check their specific requirements</li>
+  </ul>
+</div>

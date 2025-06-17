@@ -1,0 +1,174 @@
+---
+title: POST Method
+description: How to make POST requests with speedcast-api
+---
+
+# Using POST Method in speedcast-api
+
+## Basic Usage
+
+### 1. Import and Create API Client
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an API client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+```
+
+### 2. Simple POST Request
+
+```typescript
+// Create a new user
+const newUser = {
+  name: "John Doe",
+  email: "john@example.com",
+};
+
+const response = await api.post('/users', newUser);
+
+// Access the created user data directly
+const createdUser = response.data;
+console.log(createdUser);
+```
+
+## Advanced Usage
+
+### With Type Safety
+
+```typescript
+// Define interfaces for request and response
+interface CreateUserRequest {
+  name: string;
+  email: string;
+}
+
+interface CreateUserResponse {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// Typed POST request
+const userData: CreateUserRequest = {
+  name: "Jane Doe",
+  email: "jane@example.com",
+};
+
+const response = await api.post<CreateUserResponse>('/users', userData);
+
+// TypeScript knows the exact shape of the response
+const createdUser = response.data;
+console.log(createdUser.id); // Fully typed!
+```
+
+### Custom Options
+
+#### Add Headers
+
+```typescript
+const response = await api.post('/users', userData, {
+  headers: {
+    'X-Request-ID': generateUniqueId(),
+    'Content-Type': 'application/json',
+  },
+});
+```
+
+#### Set Timeout
+
+```typescript
+// Set custom timeout for this request
+const response = await api.post('/users', userData, {
+  timeout: 15000, // 15 seconds
+});
+```
+
+#### Configure Retries
+
+```typescript
+// Set custom retry count for this request
+const response = await api.post('/important-data', userData, {
+  retries: 5 // More retries for important data
+});
+```
+
+## Handling Different Data Types
+
+### Sending FormData
+
+```typescript
+// For file uploads or multipart form data
+const formData = new FormData();
+formData.append("file", fileInput.files[0]);
+formData.append("username", "John");
+
+const response = await api.post('/upload', formData);
+```
+
+## Full Example
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  defaultHeaders: {
+    'Accept': 'application/json',
+    'User-Agent': 'MyAwesomeApp/1.0'
+  },
+  timeout: 10000,
+  retries: 3,
+  rateLimit: {
+    requests: 5,
+    window: 1000 // 5 requests per second
+  }
+});
+
+async function createUserProfile() {
+  try {
+    const profileData = {
+      username: "newuser",
+      email: "user@example.com",
+      age: 30,
+    };
+    
+    const response = await api.post<UserProfile>('/profiles', profileData, {
+      headers: {
+        Authorization: `Bearer ${yourAuthToken}`,
+      },
+      timeout: 20000 // Override timeout for this specific request
+    });
+    
+    // Process successful response
+    console.log('Profile created:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create profile:', error);
+    throw error;
+  }
+}
+```
+
+## Response Structure
+
+The response from a POST request has the following structure:
+
+```typescript
+interface ApiResponse<T = any> {
+  data: T;                           // Response data
+  status: number;                    // HTTP status code
+  statusText: string;                // HTTP status text
+  headers: Record<string, string>;   // Response headers
+}
+```
+
+## Quick Tips
+
+- Define request and response types for type safety
+- Use exponential backoff retry logic for critical operations
+- Remember that POST requests are not cached by default
+- Handle errors with standard try/catch blocks
+- Log response status codes for debugging

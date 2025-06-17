@@ -1,0 +1,177 @@
+---
+title: Auto Retry
+description: How to use the built-in automatic retry feature in speedcast-api
+---
+
+# Auto Retry in Speedcast API
+
+## Overview
+
+Network failures and temporary server issues are inevitable in distributed systems. Speedcast API includes a robust automatic retry mechanism that intelligently handles transient errors, improving the reliability of your API calls without adding complexity to your code.
+
+## How Auto Retry Works
+
+When a request fails, Speedcast API:
+
+1. Determines if the failure is retriable (e.g., network issues, server errors)
+2. Waits using exponential backoff to avoid overwhelming the server
+3. Automatically retries the request up to the configured number of attempts
+4. Returns the successful response if any retry succeeds
+5. Propagates the error only after all retries have been exhausted
+
+## Configuration
+
+### Global Retry Configuration
+
+You can configure retry behavior globally when creating your API instance:
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  retries: 3  // Retry failed requests up to 3 times (default)
+});
+```
+
+### Per-Request Retry Configuration
+
+You can also control retry behavior on a per-request basis:
+
+```typescript
+// Override global settings for this specific request
+const response = await api.get('/critical-data', {
+  retries: 5  // More retries for important data
+});
+
+// Disable retries for this specific request
+const response = await api.get('/non-critical-data', {
+  retries: 0  // No retries
+});
+```
+
+## Exponential Backoff
+
+Speedcast API uses exponential backoff to space out retry attempts, reducing server load and increasing the chance of success:
+
+- First retry: 1 second delay
+- Second retry: 2 seconds delay
+- Third retry: 4 seconds delay
+- Fourth retry: 8 seconds delay
+- And so on...
+
+This approach prevents overwhelming the server with too many requests in quick succession when it might be experiencing issues.
+
+## Real-World Examples
+
+### Handling Unreliable Networks
+
+```typescript
+// Mobile app scenario with unreliable connectivity
+const mobileApi = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  retries: 3,  // Retry up to 3 times
+  timeout: 10000  // 10 second timeout
+});
+
+// This function will automatically retry on network failures
+async function syncUserData() {
+  try {
+    const response = await mobileApi.post('/sync', userData);
+    console.log('Data synced successfully');
+    return response.data;
+  } catch (error) {
+    // This error is thrown only after all retries have failed
+    console.error('Failed to sync data after multiple attempts');
+    throw error;
+  }
+}
+```
+
+### Critical Financial Operations
+
+```typescript
+// Banking API that requires high reliability
+const bankingApi = new SpeedcastApi({
+  baseURL: 'https://api.banking.com',
+  retries: 5  // More retries for critical financial operations
+});
+
+async function processPayment(paymentDetails) {
+  try {
+    const response = await bankingApi.post('/transactions', paymentDetails);
+    return {
+      success: true,
+      transactionId: response.data.id
+    };
+  } catch (error) {
+    // Error logging after all retries failed
+    console.error('Payment processing failed after multiple attempts:', error);
+    return {
+      success: false,
+      reason: error.message
+    };
+  }
+}
+```
+
+## Which Errors Trigger Retries
+
+By default, Speedcast API will retry on the following conditions:
+
+- Network errors (connection refused, DNS failures, etc.)
+- HTTP 5xx server errors
+- HTTP 429 (Too Many Requests) responses
+- Request timeouts
+
+However, it will NOT retry on:
+
+- HTTP 4xx client errors (except 429)
+- HTTP 3xx redirects (these are handled automatically)
+- Canceled requests
+
+This logic ensures that retries are only attempted when there's a reasonable chance of success on a subsequent attempt.
+
+## Best Practices
+
+### 1. Adjust Retry Count Based on Criticality
+
+```typescript
+// For critical operations
+const criticalOps = await api.post('/payment', data, { retries: 5 });
+
+// For non-critical operations
+const nonCriticalOps = await api.get('/feed', { retries: 1 });
+```
+
+### 2. Combine with Timeout Settings
+
+```typescript
+// Set both timeouts and retries for optimal reliability
+const response = await api.post('/process', data, {
+  retries: 3,
+  timeout: 5000  // 5 second timeout per attempt
+});
+```
+
+### 3. Add Extra Error Handling for Critical Operations
+
+```typescript
+try {
+  const response = await api.post('/critical-operation', data, {
+    retries: 5
+  });
+  // Process success
+} catch (error) {
+  // This means all 5 retry attempts have failed
+  // Implement fallback strategy or notify user
+  console.error('Operation failed after multiple attempts:', error);
+  notifyAdministrator(error);
+}
+```
+
+### 4. Use with Idempotent Operations
+
+Retries are safest with idempotent operations (GET, PUT, DELETE) where multiple identical requests produce the same result. For non-idempotent operations like POST, ensure your API can handle multiple identical requests correctly.
+
+By leveraging Speedcast API's automatic retry functionality, you can build more resilient applications that gracefully handle temporary network issues and server errors. 

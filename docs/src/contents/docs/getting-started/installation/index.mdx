@@ -1,0 +1,88 @@
+---
+title: Installation
+description: Installation Guide for speedcast-api.
+---
+
+## 📦 Installation
+
+Choose your favorite package manager:
+
+```bash
+# npm
+npm install speedcast-api
+
+# yarn
+yarn add speedcast-api
+
+# pnpm
+pnpm add speedcast-api
+
+# bun
+bun add speedcast-api
+```
+
+## 🚀 Quick Start
+
+### Basic Usage - Get Up and Running in 30 Seconds!
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// 1️⃣ Create your API instance
+const api = new SpeedcastApi({
+  baseURL: 'https://jsonplaceholder.typicode.com'
+});
+
+// 2️⃣ Make your first request
+const fetchUsers = async () => {
+  const response = await api.get('/users');
+  console.log('Users:', response.data);
+};
+
+fetchUsers();
+```
+
+**That's it! You're ready to go! 🎉**
+
+## 💡 Real-World Examples
+
+### 📊 E-commerce Product Catalog
+
+```typescript
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+}
+
+const shopApi = new SpeedcastApi({
+  baseURL: 'https://api.myshop.com',
+  defaultHeaders: {
+    'Authorization': 'Bearer your-token-here',
+    'X-Shop-Version': 'v2'
+  },
+  // Cache product data for 5 minutes
+  cache: true,
+  cacheTTL: 300000
+});
+
+// Get products with automatic caching
+const getProducts = async (): Promise<Product[]> => {
+  const response = await shopApi.get<Product[]>('/products', {
+    cache: true // This request will be cached!
+  });
+  return response.data;
+};
+
+// Create a new product
+const createProduct = async (product: Omit<Product, 'id'>) => {
+  const response = await shopApi.post<Product>('/products', product);
+  console.log('✅ Product created:', response.data);
+  return response.data;
+};
+```
+
+## ⚙️ Advanced Configuration
+
+For more advanced configuration options, check out the [Configuration Options](/docs/getting-started/options) section.

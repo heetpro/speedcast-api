@@ -1,0 +1,464 @@
+---
+title: Example Applications
+description: Real-world examples of using speedcast-api in different applications
+---
+
+# 📱 Example Applications
+
+<div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-lg border border-teal-200 mb-6">
+  <p className="text-teal-800 font-medium">These examples demonstrate how to use Speedcast API in various real-world scenarios, giving you a starting point for integrating it into your own projects.</p>
+</div>
+
+## E-commerce Product Catalog
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Initialize API client with caching enabled for product data
+const shopApi = new SpeedcastApi({
+  baseURL: 'https://api.myshop.com',
+  defaultHeaders: {
+    'Authorization': 'Bearer your-token-here',
+    'X-Shop-Version': 'v2'
+  },
+  cache: true,
+  cacheTTL: 300000 // 5 minutes
+});
+
+// Product types
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  description: string;
+  category: string;
+  inStock: boolean;
+}
+
+// Get all products with caching
+export async function getProducts(): Promise<Product[]> {
+  try {
+    const response = await shopApi.get<Product[]>('/products', {
+      cache: true // Use cache
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return [];
+  }
+}
+
+// Get a single product - don't cache sensitive data like inventory
+export async function getProduct(id: number): Promise<Product | null> {
+  try {
+    const response = await shopApi.get<Product>(`/products/${id}`, {
+      cache: false // Always get fresh data for individual products
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch product ${id}:`, error);
+    return null;
+  }
+}
+
+// Create a new product
+export async function createProduct(product: Omit<Product, 'id'>): Promise<Product | null> {
+  try {
+    const response = await shopApi.post<Product>('/products', product);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    return null;
+  }
+}
+
+// Update product inventory
+export async function updateInventory(id: number, inStock: boolean): Promise<boolean> {
+  try {
+    await shopApi.patch(`/products/${id}`, { inStock });
+    return true;
+  } catch (error) {
+    console.error(`Failed to update inventory for product ${id}:`, error);
+    return false;
+  }
+}
+```
+</div>
+
+## Social Media Feed
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Initialize API client with rate limiting for social API
+const socialApi = new SpeedcastApi({
+  baseURL: 'https://api.social-network.com',
+  defaultHeaders: {
+    'Content-Type': 'application/json'
+  },
+  // Rate limit to 10 requests per second
+  rateLimit: {
+    requests: 10,
+    window: 1000
+  },
+  // Retry API calls that fail due to network issues
+  retries: 2
+});
+
+// Post interface
+interface Post {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+  };
+  likes: number;
+  comments: number;
+  createdAt: string;
+}
+
+// Get user feed with automatic deduplication
+export async function getFeed(userId: string): Promise<Post[]> {
+  try {
+    const response = await socialApi.get<Post[]>(`/users/${userId}/feed`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch feed:', error);
+    return [];
+  }
+}
+
+// Like a post (with auto retry for unreliable networks)
+export async function likePost(postId: string): Promise<boolean> {
+  try {
+    await socialApi.post(`/posts/${postId}/like`, {});
+    return true;
+  } catch (error) {
+    console.error(`Failed to like post ${postId}:`, error);
+    return false;
+  }
+}
+
+// Batch processing with rate limiting
+export async function likeMultiplePosts(postIds: string[]): Promise<number> {
+  try {
+    // These will be automatically rate limited
+    const results = await Promise.allSettled(
+      postIds.map(id => socialApi.post(`/posts/${id}/like`, {}))
+    );
+    
+    return results.filter(r => r.status === 'fulfilled').length;
+  } catch (error) {
+    console.error('Error in batch operation:', error);
+    return 0;
+  }
+}
+```
+</div>
+
+## Authentication & User Management
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create API client for auth operations
+const authApi = new SpeedcastApi({
+  baseURL: 'https://api.myapp.com/auth',
+  // No caching for auth endpoints
+  cache: false,
+  // Shorter timeout for auth operations
+  timeout: 5000
+});
+
+// User profile client with auth token injection
+function createUserApi(token: string) {
+  return new SpeedcastApi({
+    baseURL: 'https://api.myapp.com',
+    defaultHeaders: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    // Cache user data for 1 minute
+    cache: true,
+    cacheTTL: 60000
+  });
+}
+
+// Types
+interface LoginResponse {
+  token: string;
+  user: UserProfile;
+}
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
+// Login function
+export async function login(email: string, password: string): Promise<LoginResponse | null> {
+  try {
+    const response = await authApi.post<LoginResponse>('/login', { email, password });
+    
+    // Store the token
+    localStorage.setItem('auth_token', response.data.token);
+    
+    return response.data;
+  } catch (error) {
+    console.error('Login failed:', error);
+    return null;
+  }
+}
+
+// Get user profile with the stored token
+export async function getUserProfile(): Promise<UserProfile | null> {
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    console.error('No auth token found');
+    return null;
+  }
+  
+  const userApi = createUserApi(token);
+  
+  try {
+    const response = await userApi.get<UserProfile>('/me');
+    return response.data;
+  } catch (error) {
+    if (error.status === 401) {
+      // Token expired, clear it
+      localStorage.removeItem('auth_token');
+    }
+    console.error('Failed to fetch user profile:', error);
+    return null;
+  }
+}
+
+// Update user profile
+export async function updateProfile(updates: Partial<UserProfile>): Promise<UserProfile | null> {
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    console.error('No auth token found');
+    return null;
+  }
+  
+  const userApi = createUserApi(token);
+  
+  try {
+    const response = await userApi.patch<UserProfile>('/me', updates);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    return null;
+  }
+}
+```
+</div>
+
+## Real-time Dashboard with Polling
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+import { useEffect, useState } from 'react';
+
+// Initialize API with minimal caching for dashboard data
+const dashboardApi = new SpeedcastApi({
+  baseURL: 'https://api.analytics.com',
+  // Cache for a very short time to avoid hammering the API
+  cache: true,
+  cacheTTL: 10000, // 10 seconds
+  // Retry failed requests
+  retries: 2
+});
+
+// Dashboard data type
+interface DashboardMetrics {
+  visits: number;
+  conversions: number;
+  revenue: number;
+  userCount: number;
+  timestamp: string;
+}
+
+// React hook for dashboard data with polling
+export function useDashboardMetrics(pollInterval = 30000) {
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    let intervalId: number;
+
+    // Function to fetch the metrics
+    async function fetchMetrics() {
+      if (!isMounted) return;
+      
+      setLoading(true);
+      try {
+        const response = await dashboardApi.get<DashboardMetrics>('/metrics');
+        
+        if (isMounted) {
+          setMetrics(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError('Failed to fetch metrics');
+          console.error('Dashboard metrics error:', err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    // Initial fetch
+    fetchMetrics();
+    
+    // Set up polling interval
+    if (pollInterval > 0) {
+      intervalId = window.setInterval(fetchMetrics, pollInterval);
+    }
+
+    // Clean up
+    return () => {
+      isMounted = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [pollInterval]);
+
+  // Function to force refresh
+  const refresh = () => {
+    // Clear the cache for this endpoint specifically
+    dashboardApi.clearCache();
+    // Then fetch again
+    fetchMetrics();
+  };
+
+  return { metrics, loading, error, refresh };
+}
+
+// Usage in a React component
+function DashboardComponent() {
+  const { metrics, loading, error, refresh } = useDashboardMetrics(15000);
+  
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <button onClick={refresh}>Refresh Now</button>
+      
+      {loading && <p>Loading metrics...</p>}
+      {error && <p className="error">{error}</p>}
+      
+      {metrics && (
+        <div>
+          <p>Visits: {metrics.visits}</p>
+          <p>Conversions: {metrics.conversions}</p>
+          <p>Revenue: ${metrics.revenue}</p>
+          <p>Users: {metrics.userCount}</p>
+          <p>Updated: {new Date(metrics.timestamp).toLocaleTimeString()}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+</div>
+
+## Integration with UI Libraries
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+  <div className="bg-white p-4 rounded-lg border-l-4 border-pink-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-2">With React Query</h3>
+    
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+import { useQuery, useMutation } from '@tanstack/react-query';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+
+// Fetch products using React Query
+export function useProducts() {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await api.get('/products');
+      return response.data;
+    }
+  });
+}
+
+// Create a product using mutation
+export function useCreateProduct() {
+  return useMutation({
+    mutationFn: async (newProduct) => {
+      const response = await api.post('/products', newProduct);
+      return response.data;
+    }
+  });
+}
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border-l-4 border-violet-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-2">With Toast Notifications</h3>
+    
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+import { toast } from 'sonner';  // Or any toast library
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+
+// Function with toast notifications
+export async function createUser(userData) {
+  try {
+    const response = await api.post('/users', userData);
+    toast.success('User created successfully!');
+    return response.data;
+  } catch (error) {
+    toast.error(error.message || 'Failed to create user');
+    throw error;
+  }
+}
+
+// Generic error handling wrapper
+export function withToast(apiCall) {
+  return async (...args) => {
+    try {
+      const result = await apiCall(...args);
+      return result;
+    } catch (error) {
+      toast.error(error.message || 'Operation failed');
+      throw error;
+    }
+  };
+}
+```
+  </div>
+</div>
+
+<div className="bg-gray-50 p-4 rounded-lg border border-gray-200 my-6">
+  <h3 className="text-lg font-semibold mb-2">Ready for production</h3>
+  <p className="mb-4">These examples should give you a solid foundation for integrating Speedcast API into your applications. Customize them based on your specific requirements and API endpoints.</p>
+  <p>For more advanced usage, check out the other documentation sections covering specific features like <a href="/docs/others/caching" className="text-blue-600 hover:underline">Smart Caching</a>, <a href="/docs/others/rate-limiting" className="text-blue-600 hover:underline">Rate Limiting</a>, and <a href="/docs/others/retry" className="text-blue-600 hover:underline">Auto Retry</a>.</p>
+</div>

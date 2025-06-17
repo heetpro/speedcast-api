@@ -1,0 +1,153 @@
+---
+title: Configuration Options
+description: A comprehensive overview of all available configuration options in speedcast-api.
+---
+
+# ⚙️ Advanced Configuration
+
+Here's a breakdown of all the configuration options available in `speedcast-api`:
+
+### 🎛️ Complete Configuration Options
+
+```typescript
+const api = new SpeedcastApi({
+  // Base configuration
+  baseURL: 'https://api.example.com',
+  timeout: 10000, // 10 seconds
+  
+  // Default headers for all requests
+  defaultHeaders: {
+    'User-Agent': 'MyApp/1.0.0',
+    'Accept': 'application/json'
+  },
+  
+  // Retry configuration
+  retries: 3, // Retry failed requests up to 3 times
+  
+  // Caching configuration
+  cache: true, // Enable caching globally
+  cacheTTL: 300000, // Cache for 5 minutes (milliseconds)
+  
+  // Rate limiting configuration
+  rateLimit: {
+    requests: 100, // Maximum 100 requests
+    window: 60000  // Per minute (60 seconds)
+  }
+});
+```
+
+## Available Options
+
+### 1. baseURL
+
+- **Default:** None
+- **Purpose:** Sets a common base URL for all API requests.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({ baseURL: "https://api.example.com" });
+  ```
+
+### 2. defaultHeaders
+
+- **Default:** `{ 'Content-Type': 'application/json' }`
+- **Purpose:** Sets headers included in all requests.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({
+    defaultHeaders: {
+      Authorization: "Bearer your_token",
+      "Content-Type": "application/json",
+    },
+  });
+  ```
+
+### 3. timeout
+
+- **Default:** `10000` (10 seconds)
+- **Purpose:** Sets the maximum time in milliseconds that a request can take before being aborted.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({ timeout: 30000 }); // 30 seconds
+  ```
+
+### 4. retries
+
+- **Default:** `3`
+- **Purpose:** Controls the number of retry attempts for failed requests with exponential backoff.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({ retries: 5 }); // Retry up to 5 times
+  ```
+
+### 5. cache
+
+- **Default:** `false`
+- **Purpose:** Controls whether responses should be cached globally.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({ cache: true }); // Enable caching globally
+  ```
+
+### 6. cacheTTL
+
+- **Default:** `300000` (5 minutes)
+- **Purpose:** Sets the cache time-to-live in milliseconds.
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({ cacheTTL: 3600000 }); // Cache for 1 hour
+  ```
+
+### 7. rateLimit
+
+- **Default:** None
+- **Purpose:** Controls request rate limiting to prevent API limits being reached.
+- **Structure:**
+  ```typescript
+  interface RateLimitConfig {
+    requests: number; // Maximum number of requests
+    window: number;   // Time window in milliseconds
+  }
+  ```
+- **Example:**
+  ```typescript
+  const api = new SpeedcastApi({
+    rateLimit: {
+      requests: 10,   // Maximum 10 requests
+      window: 1000    // Per second
+    }
+  });
+  ```
+
+## Per-Request Configuration
+
+You can also override global settings for specific requests:
+
+```typescript
+// Override global settings for this specific request
+const response = await api.get('/critical-data', {
+  timeout: 30000,    // 30 second timeout for this request
+  retries: 5,        // More retries for critical data
+  cache: false,      // Skip cache for real-time data
+  headers: {
+    'X-Priority': 'high'
+  }
+});
+```
+
+## Utility Methods
+
+### Cache Management
+
+```typescript
+// Clear all cached responses
+api.clearCache();
+
+// Update base URL dynamically
+api.setBaseURL('https://api-v2.example.com');
+
+// Add or update default headers
+api.setDefaultHeaders({
+  'X-New-Header': 'value',
+  'Authorization': 'Bearer new-token'
+});
+```

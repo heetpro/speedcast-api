@@ -1,0 +1,251 @@
+---
+title: Utility Methods
+description: Additional features and utility methods in speedcast-api
+---
+
+# ⚙️ Utility Methods & Advanced Features
+
+<div className="bg-gradient-to-r from-slate-50 to-gray-50 p-4 rounded-lg border border-slate-200 mb-6">
+  <p className="text-slate-800 font-medium">Speedcast API comes with several utility methods and advanced features to help you customize and control your API client behavior beyond the basic request methods.</p>
+</div>
+
+## API Instance Management
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+  <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+    <h3 className="text-lg font-semibold mb-3">Update Base URL</h3>
+    
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com/v1'
+});
+
+// Later, if you need to update the base URL (e.g., API version change)
+api.setBaseURL('https://api.example.com/v2');
+```
+  </div>
+
+  <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+    <h3 className="text-lg font-semibold mb-3">Update Default Headers</h3>
+    
+```typescript
+// Set default headers that will be sent with every request
+api.setDefaultHeaders({
+  'X-API-Version': '1.0.0',
+  'X-Client-Type': 'web'
+});
+
+// Add additional headers without overwriting existing ones
+api.setDefaultHeaders({
+  'X-Custom-Header': 'custom-value'
+});
+```
+  </div>
+</div>
+
+## Cache Management
+
+<div className="bg-white p-6 rounded-lg border-l-4 border-blue-500 shadow-sm my-6">
+  <h3 className="text-lg font-semibold mb-3">Controlling the Cache</h3>
+  
+```typescript
+// Clear all cached responses
+api.clearCache();
+
+// Make a request bypassing cache
+const freshData = await api.get('/data', { cache: false });
+
+// Cache a specific response for longer
+const response = await api.get('/long-lived-data', {
+  cache: true,
+  cacheTTL: 3600000 // 1 hour
+});
+```
+</div>
+
+## Authentication Management
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+  <h3 className="text-lg font-semibold mb-3">Setting Authentication Token</h3>
+  
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+
+// Function to update the auth token
+function updateAuthToken(token: string | null) {
+  if (token) {
+    // Set Bearer token in default headers
+    api.setDefaultHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  } else {
+    // Remove Authorization header when token is null
+    const headers = { ...api.defaultHeaders };
+    delete headers['Authorization'];
+    api.setDefaultHeaders(headers);
+  }
+}
+
+// Usage
+updateAuthToken(localStorage.getItem('token'));
+
+// After logout
+updateAuthToken(null);
+```
+</div>
+
+## Creating Multiple API Instances
+
+<div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200 my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an instance for public API endpoints
+const publicApi = new SpeedcastApi({
+  baseURL: 'https://api.example.com/public',
+  cache: true,        // Cache public data
+  cacheTTL: 300000,   // 5 minutes cache
+  retries: 3
+});
+
+// Create another instance for authenticated endpoints
+const authApi = new SpeedcastApi({
+  baseURL: 'https://api.example.com/auth',
+  cache: false,       // Don't cache authenticated data
+  timeout: 10000,     // 10s timeout
+  retries: 2,
+  defaultHeaders: {
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json'
+  }
+});
+
+// Create an instance for a third-party API
+const thirdPartyApi = new SpeedcastApi({
+  baseURL: 'https://api.third-party.com',
+  rateLimit: {        // Respect their rate limits
+    requests: 5,
+    window: 1000      // 5 requests per second
+  }
+});
+```
+</div>
+
+## Custom Use Cases
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+  <div className="bg-white p-6 rounded-lg border-l-4 border-green-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-3">API Version Switching</h3>
+    
+```typescript
+// Create a function that returns configured API instances
+function createApiClient(version: 'v1' | 'v2') {
+  return new SpeedcastApi({
+    baseURL: `https://api.example.com/${version}`,
+    defaultHeaders: {
+      'X-API-Version': version
+    }
+  });
+}
+
+// Use different API versions as needed
+const apiV1 = createApiClient('v1');
+const apiV2 = createApiClient('v2');
+
+// Then use them based on feature flags
+const api = featureFlags.useNewApi ? apiV2 : apiV1;
+```
+  </div>
+
+  <div className="bg-white p-6 rounded-lg border-l-4 border-amber-500 shadow-sm">
+    <h3 className="text-lg font-semibold mb-3">Environment Configuration</h3>
+    
+```typescript
+// Configure API based on environment
+const api = new SpeedcastApi({
+  baseURL: process.env.API_URL,
+  timeout: process.env.NODE_ENV === 'production' 
+    ? 10000    // 10s in production
+    : 30000,   // 30s in development
+  
+  // More verbose in development
+  retries: process.env.NODE_ENV === 'production'
+    ? 3
+    : 1
+});
+```
+  </div>
+</div>
+
+## Complete Initialization Example
+
+<div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  // Base URL for all requests
+  baseURL: 'https://api.example.com',
+  
+  // Default headers
+  defaultHeaders: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-App-Version': '1.0.0',
+    'X-Client-Platform': 'web'
+  },
+  
+  // Timeout settings
+  timeout: 15000,  // 15 seconds
+  
+  // Retry configuration
+  retries: 3,
+  
+  // Cache settings
+  cache: true,
+  cacheTTL: 300000,  // 5 minutes
+  
+  // Rate limiting
+  rateLimit: {
+    requests: 20,
+    window: 1000    // 20 requests per second
+  }
+});
+
+// Usage example
+async function fetchData() {
+  try {
+    // Add authorization header for this specific call
+    const response = await api.get('/secured-data', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    throw error;
+  }
+}
+```
+</div>
+
+<div className="bg-gray-50 p-4 rounded-lg border border-gray-200 my-6">
+  <h3 className="text-lg font-semibold mb-2">💡 Quick Tips</h3>
+  <ul className="list-disc pl-6 space-y-1">
+    <li>Create multiple API instances for different services or authorization levels</li>
+    <li>Regularly clear cache for data that needs to be fresh</li>
+    <li>Adjust timeout and retry settings based on endpoint reliability</li>
+    <li>Use environment variables for base URLs to support different environments</li>
+    <li>Create utility functions to manage tokens and authentication state</li>
+  </ul>
+</div>

@@ -1,0 +1,146 @@
+---
+title: Request Deduplication
+description: How to use the built-in request deduplication feature in speedcast-api
+---
+
+# Request Deduplication in Speedcast API
+
+## Overview
+
+Request deduplication is a powerful optimization technique that prevents duplicate API calls when multiple parts of your application request the same data simultaneously. Speedcast API intelligently manages concurrent identical requests to improve performance and reduce server load.
+
+## How Request Deduplication Works
+
+When multiple identical requests occur concurrently, Speedcast API:
+
+1. Detects when the same request is made while a previous one is still pending
+2. Returns the same promise for all duplicate requests
+3. Makes only a single network request to the API
+4. Resolves all waiting promises with the same response when it completes
+5. Automatically handles errors and propagates them to all waiting promises
+
+## Automatic Deduplication
+
+Request deduplication is built into Speedcast API and works automatically without any additional configuration. It's active for all request methods including GET, POST, PUT, DELETE, etc.
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+
+// If this function is called multiple times in quick succession,
+// only one actual HTTP request will be made
+async function getUserData(userId: string) {
+  const response = await api.get(`/users/${userId}`);
+  return response.data;
+}
+```
+
+## Real-World Benefits
+
+### Improved Frontend Performance
+
+```typescript
+// Common scenario: Component mounting triggers multiple identical API calls
+function UserProfile({ userId }) {
+  // These components might all fetch the same user data on mount
+  return (
+    <div>
+      <UserHeader userId={userId} />
+      <UserDetails userId={userId} />
+      <UserActivity userId={userId} />
+    </div>
+  );
+}
+
+// With Speedcast API, all these components can call the same function without worry
+// Only ONE network request will actually be made
+function UserHeader({ userId }) {
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    // This same call might happen in multiple components
+    api.get(`/users/${userId}`).then(response => {
+      setUser(response.data);
+    });
+  }, [userId]);
+  
+  // Component rendering...
+}
+```
+
+### API Call Optimization
+
+Deduplication is particularly valuable in these scenarios:
+
+1. **React/Vue Component Trees** - When multiple components need the same data
+2. **Parallel Data Fetching** - When using `Promise.all` with potentially duplicate requests
+3. **User Interactions** - When users rapidly click buttons that trigger the same API call
+4. **Server-Side Rendering** - When rendering requires the same data in multiple places
+
+## Deduplication vs. Caching
+
+It's important to understand the distinction between request deduplication and caching:
+
+| Feature | Request Deduplication | Caching |
+|---------|----------------------|---------|
+| **Purpose** | Prevents duplicate requests in flight | Stores responses for future use |
+| **Duration** | Only while request is pending | Based on TTL configuration |
+| **Scope** | Only for concurrent identical requests | For all requests within cache TTL |
+| **When to use** | Always on (automatic) | For data that doesn't change frequently |
+
+## Advanced Example: Data Fetching Library
+
+```typescript
+// Example of a custom data fetching library built on Speedcast API
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  cache: true, // Enable caching for even more optimization
+  cacheTTL: 60000 // 1 minute cache
+});
+
+// Create a simple data fetching library
+export function createDataFetcher() {
+  return {
+    // Get data with both deduplication and caching
+    async fetch<T>(endpoint: string): Promise<T> {
+      const response = await api.get<T>(endpoint);
+      return response.data;
+    },
+    
+    // Post data with deduplication (but no caching)
+    async save<T>(endpoint: string, data: any): Promise<T> {
+      const response = await api.post<T>(endpoint, data);
+      return response.data;
+    }
+  };
+}
+
+// Usage of the data fetcher
+const dataFetcher = createDataFetcher();
+
+// These will be automatically deduplicated if called at the same time
+const users1 = dataFetcher.fetch('/users');
+const users2 = dataFetcher.fetch('/users');
+// Only ONE actual API call will be made
+```
+
+## Best Practices
+
+1. **Take Advantage of Automatic Deduplication**
+   - Don't worry about duplicate requests in your application
+   - Design your code for clarity rather than avoiding duplicate calls
+
+2. **Combine with Caching**
+   - Use both deduplication and caching for maximum efficiency
+   - Deduplication handles concurrent requests, caching handles sequential ones
+
+3. **Request Identification**
+   - Remember that requests are deduplicated based on URL, method, and body
+   - Requests with different headers are considered different requests
+
+By leveraging Speedcast API's automatic request deduplication, your application will be more efficient and performant without any additional effort. 

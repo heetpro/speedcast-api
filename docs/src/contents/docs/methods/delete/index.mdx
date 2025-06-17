@@ -1,0 +1,179 @@
+---
+title: DELETE Method
+description: How to make DELETE requests with speedcast-api
+---
+
+# 🗑️ Using DELETE Method
+
+<div className="bg-gradient-to-r from-amber-50 to-red-50 p-4 rounded-lg border border-red-200 mb-6">
+  <p className="text-red-800 font-medium">DELETE requests are used to remove resources from the server. Always use with caution as these operations are often irreversible.</p>
+</div>
+
+## Basic Usage
+
+### 1. Import and Create API Client
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+// Create an API client
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com'
+});
+```
+
+### 2. Simple DELETE Request
+
+```typescript
+// Delete a user by ID
+const response = await api.delete('/users/123');
+
+// Process the response directly
+console.log(`Status: ${response.status}`); // e.g., 204 No Content
+console.log('User deleted successfully');
+```
+
+## Advanced Usage
+
+### With Type Safety
+
+```typescript
+// Define a response interface if the API returns specific data
+interface DeleteResponse {
+  message: string;
+  deletedId: number;
+}
+
+const response = await api.delete<DeleteResponse>('/users/123');
+
+// TypeScript knows the exact shape of the response
+const deleteResult = response.data;
+console.log(deleteResult.message);
+```
+
+### Adding Custom Options
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Add Headers</h4>
+    
+```typescript
+const response = await api.delete('/users/123', {
+  headers: {
+    'X-Reason': 'Account Closure',
+    'Authorization': `Bearer ${yourAuthToken}`,
+  },
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Set Timeout</h4>
+    
+```typescript
+const response = await api.delete('/users/123', {
+  timeout: 8000, // 8 seconds
+});
+```
+  </div>
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-6">
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Configure Retries</h4>
+    
+```typescript
+const response = await api.delete('/users/123', {
+  retries: 2, // Retry twice if it fails
+});
+```
+  </div>
+
+  <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+    <h4 className="text-lg font-semibold mb-2">Error Handling</h4>
+    
+```typescript
+try {
+  const response = await api.delete('/users/123');
+  console.log('Deletion successful');
+} catch (error) {
+  console.error('Deletion failed:', error);
+}
+```
+  </div>
+</div>
+
+## Full Example Scenario
+
+<div className="bg-gradient-to-r from-sky-50 to-indigo-50 p-6 rounded-lg border border-blue-200 my-6">
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  defaultHeaders: {
+    'Accept': 'application/json',
+    'User-Agent': 'MyAwesomeApp/1.0'
+  }
+});
+
+async function removeUser(userId: number) {
+  try {
+    const response = await api.delete<{ message: string }>(`/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${yourAuthToken}`,
+        'X-Reason-Code': 'USER_REQUESTED'
+      },
+      timeout: 10000, // 10 seconds
+      retries: 1      // Retry once if it fails
+    });
+    
+    // User successfully deleted
+    console.log('User removed:', response.data.message);
+    removeUserFromLocalState(userId);
+    return true;
+  } catch (error) {
+    // Handle deletion failure
+    console.error('Failed to delete user:', error);
+    return false;
+  }
+}
+```
+</div>
+
+## Practical Considerations
+
+### Deleting with Query Parameters
+
+```typescript
+// Delete with additional parameters using URL
+const response = await api.delete('/items?status=inactive&olderThan=30days');
+
+// Or using full URL
+const response = await api.delete('https://api.example.com/items?status=inactive');
+```
+
+## Response Structure
+
+The response from a DELETE request has the following structure:
+
+```typescript
+interface ApiResponse<T = any> {
+  data: T;                           // Response data (if any)
+  status: number;                    // HTTP status code
+  statusText: string;                // HTTP status text
+  headers: Record<string, string>;   // Response headers
+}
+```
+
+<div className="bg-gray-50 p-4 rounded-lg border border-gray-200 my-6">
+  <h3 className="text-lg font-semibold mb-2">💡 Quick Tips</h3>
+  <ul className="list-disc pl-6 space-y-1">
+    <li>Common success status codes for DELETE: 204 (No Content) or 200 (OK)</li>
+    <li>Use try/catch blocks to handle potential errors</li>
+    <li>Consider implementing a confirmation step before making DELETE requests</li>
+    <li>Use type parameters for type-safe responses if your API returns data</li>
+    <li>Many DELETE endpoints don't return response bodies (204 No Content)</li>
+  </ul>
+</div>

@@ -1,0 +1,176 @@
+---
+title: Smart Caching
+description: How to use the built-in smart caching feature in speedcast-api
+---
+
+# Smart Caching in Speedcast API
+
+## Overview
+
+Speedcast API comes with a powerful built-in caching system that can significantly improve your application's performance and reduce unnecessary API calls. The smart caching system automatically stores and reuses responses for identical requests, saving bandwidth and reducing latency.
+
+## How Caching Works
+
+When you enable caching, Speedcast API:
+
+1. Stores responses based on the request URL, method, and body
+2. Automatically returns cached responses for identical requests
+3. Respects TTL (Time To Live) settings to ensure data freshness
+4. Handles cache invalidation when needed
+
+## Configuration
+
+### Global Caching
+
+You can enable caching globally when creating your API instance:
+
+```typescript
+import { SpeedcastApi } from 'speedcast-api';
+
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  cache: true,               // Enable caching globally
+  cacheTTL: 300000           // Cache for 5 minutes (300,000 milliseconds)
+});
+```
+
+### Per-Request Caching
+
+You can also control caching on a per-request basis, which overrides the global settings:
+
+```typescript
+// Enable caching for this specific request, even if globally disabled
+const response = await api.get('/users', {
+  cache: true,
+  cacheTTL: 60000 // Cache for 1 minute
+});
+
+// Disable caching for this specific request, even if globally enabled
+const freshResponse = await api.get('/real-time-data', {
+  cache: false
+});
+```
+
+## Real-World Examples
+
+### Product Catalog
+
+```typescript
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+}
+
+const shopApi = new SpeedcastApi({
+  baseURL: 'https://api.shop.com',
+  cache: true,
+  cacheTTL: 3600000 // Cache product data for 1 hour (rarely changes)
+});
+
+// This function will only make a network request the first time it's called
+// Subsequent calls within the TTL will use the cached data
+async function getProducts(): Promise<Product[]> {
+  const response = await shopApi.get<Product[]>('/products');
+  return response.data;
+}
+
+// Usage
+const productsPage1 = await getProducts(); // Makes a network request
+const productsPage2 = await getProducts(); // Uses cached data, much faster!
+```
+
+### User Profile with Different Cache Settings
+
+```typescript
+const userApi = new SpeedcastApi({
+  baseURL: 'https://api.users.com'
+});
+
+// Public data can be cached for longer periods
+async function getPublicUserProfile(userId: string) {
+  return await userApi.get(`/users/${userId}/public`, {
+    cache: true,
+    cacheTTL: 3600000 // 1 hour
+  });
+}
+
+// Private data should be more fresh
+async function getPrivateUserProfile(userId: string) {
+  return await userApi.get(`/users/${userId}/private`, {
+    cache: true,
+    cacheTTL: 60000 // 1 minute
+  });
+}
+
+// Real-time data should not be cached
+async function getUserActivity(userId: string) {
+  return await userApi.get(`/users/${userId}/activity`, {
+    cache: false // No caching for real-time data
+  });
+}
+```
+
+## Cache Management
+
+Speedcast API provides methods to manage the cache:
+
+```typescript
+// Create API instance
+const api = new SpeedcastApi({
+  baseURL: 'https://api.example.com',
+  cache: true
+});
+
+// Clear the entire cache
+api.clearCache();
+```
+
+## Benefits of Smart Caching
+
+1. **Improved Performance** - Eliminate redundant network requests
+2. **Reduced Bandwidth** - Save data usage by reusing already fetched responses
+3. **Lower API Load** - Reduce the number of calls to the API servers
+4. **Better User Experience** - Faster response times for cached data
+5. **Offline Support** - Access previously cached data even when offline
+
+## Request Deduplication
+
+In addition to caching, Speedcast API includes request deduplication, which prevents multiple identical in-flight requests:
+
+```typescript
+// If this function is called multiple times concurrently with the same userId,
+// only ONE actual network request will be made, and all callers will receive
+// the same response once it completes
+async function getUserData(userId: string) {
+  const response = await api.get(`/users/${userId}`);
+  return response.data;
+}
+
+// These will trigger only ONE network request
+const promise1 = getUserData('123');
+const promise2 = getUserData('123');
+const promise3 = getUserData('123');
+
+// All promises resolve with the same data when the single request completes
+```
+
+## Best Practices
+
+1. **Choose Appropriate TTL Values**
+   - Short TTL (< 1 min) for frequently changing data
+   - Medium TTL (1-10 min) for semi-static data
+   - Long TTL (> 10 min) for reference data that rarely changes
+
+2. **Disable Caching for**
+   - Mutations (POST, PUT, DELETE requests)
+   - Real-time data feeds
+   - User-specific sensitive information
+   - Requests with security tokens that frequently change
+
+3. **Cache Invalidation Strategy**
+   - Clear relevant parts of cache after mutations
+   - Consider expiring cache on user logout
+   - Implement refresh mechanisms for stale data
+
+By leveraging Speedcast API's smart caching system, you can create faster, more efficient applications that provide better user experiences while reducing unnecessary network traffic. 
