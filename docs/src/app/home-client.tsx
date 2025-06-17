@@ -32,16 +32,17 @@ const VerticalText = ({ text, side }: { text: string; side: "left" | "right" }) 
                 style={{
                     color: "white",
                     fontWeight: "bold",
-                    writingMode: "vertical-rl",
+                    writingMode: "vertical-lr",
                     textOrientation: "mixed",
                     margin: 0,
                     padding: 0,
+                    rotate: "180deg",
                     whiteSpace: "nowrap"
                 }}
                 animate={{ y: ["0%", "-100%"] }}
                 transition={{
                     repeat: Infinity,
-                    duration: 300,
+                    duration: 360,
                     ease: "linear",
                     repeatDelay: 0
                 }}
@@ -170,10 +171,10 @@ export default function HomeClient() {
 
                 <div className="block md:hidden absolute inset-0">
                     <div className="absolute left-2 top-0 h-full flex items-center">
-                        <p className="druk-super text-3xl rotate-180 text-white font-bold" style={{ writingMode: 'vertical-rl' }}>SPEED</p>
+                        <p className="druk-super text-3xl rotate-180 text-white font-bold" style={{ writingMode: 'vertical-lr' }}>SPEED</p>
                     </div>
                     <div className="absolute right-2 top-0 h-full flex items-center">
-                        <p className="druk-super text-3xl rotate-180 text-white font-bold" style={{ writingMode: 'vertical-rl' }}>FAST API </p>
+                        <p className="druk-super text-3xl rotate-180 text-white font-bold" style={{ writingMode: 'vertical-lr' }}>FAST API</p>
                     </div>
                 </div>
 
