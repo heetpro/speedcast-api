@@ -16,10 +16,10 @@ const VerticalText = ({ text, side }: { text: string; side: "left" | "right" }) 
     return (
         <div
             style={{
-                position: "absolute",
+                position: "relative",
                 [side]: 28,
-                top: 0,
-                bottom: 0,
+                // top: 0,
+                // bottom: 0,
                 overflow: "hidden",
                 zIndex: 10,
                 display: "flex",
@@ -163,8 +163,8 @@ export default function HomeClient() {
                 </div>
             </div>
 
-            <div className="h-[40vh] md:h-screen w-full md:w-[50%] relative overflow-hidden">
-                <div className="hidden md:block">
+            <div className="h-[40vh] md:h-screen w-full md:w-[50%] flex justify-evenly relative overflow-hidden">
+                <div className="hidden ml-5 md:block">
                     <VerticalText text="FAST CLIENT API" side="right" />
                 </div>
 
