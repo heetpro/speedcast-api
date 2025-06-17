@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SpeedCast API - Streamlined API Request Handling",
     description: "Simplify API requests with built-in error handling and toast notifications",
-    images: ["/banner.svg"],
+    images: ["/banner.jpg"],
   },
   robots: {
     index: true,
