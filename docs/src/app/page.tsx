@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     description: "Blazing fast API client with built-in caching, rate limiting, and TypeScript support",
     images: [
       {
-        url: "/banner.svg",
+        url: "/banner.jpg",
         width: 1200,
         height: 630,
         alt: "SpeedCast API Banner"
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SpeedCast API - Modern API Client",
     description: "Blazing fast API client with built-in caching and rate limiting",
-    images: ["/banner.svg"],
+    images: ["/banner.jpg"],
   },
   alternates: {
     canonical: 'https://speedcast.heet.pro',
