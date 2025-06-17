@@ -28,7 +28,7 @@ const VerticalText = ({ text, side }: { text: string; side: "left" | "right" }) 
             }}
         >
             <motion.p
-                className="druk-super text-8xl"
+                className="druk-super text-9xl"
                 style={{
                     color: "white",
                     fontWeight: "bold",
